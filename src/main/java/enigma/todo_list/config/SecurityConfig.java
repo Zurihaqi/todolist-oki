@@ -32,6 +32,9 @@ public class SecurityConfig {
     private final LogoutHandler logoutHandler;
 
     @Autowired
+    private final SuperAdminAuthFilter superAdminAuthFilter;
+
+    @Autowired
     private CustomAccessDeniedException accessDeniedException;
 
     @Autowired
@@ -75,6 +78,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(superAdminAuthFilter, JwtAuthenticationFilter.class)
+
                 .logout(logout -> logout.logoutUrl("/api/auth/logout")
                         .addLogoutHandler(logoutHandler)
                         .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext())));

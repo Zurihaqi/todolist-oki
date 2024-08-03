@@ -2,6 +2,8 @@ package enigma.todo_list.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import enigma.todo_list.config.JwtService;
+import enigma.todo_list.config.advisers.exception.InvalidFormatException;
+import enigma.todo_list.config.advisers.exception.MissingFieldException;
 import enigma.todo_list.config.advisers.exception.NotFoundException;
 import enigma.todo_list.model.enums.Role;
 import enigma.todo_list.model.enums.TokenType;
@@ -13,9 +15,9 @@ import enigma.todo_list.service.serv.AuthenticationService;
 import enigma.todo_list.utils.dto.AuthenticationRequestDTO;
 import enigma.todo_list.utils.dto.AuthenticationResponseDTO;
 import enigma.todo_list.utils.dto.RegisterRequestDTO;
-import enigma.todo_list.utils.responseWrapper.MyResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,40 +41,52 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
-    public AuthenticationResponseDTO register(RegisterRequestDTO request) {
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : Role.USER)
-                .build();
-        var savedUser = userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        saveUserToken(savedUser, jwtToken);
-        return AuthenticationResponseDTO.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
+    public User register(RegisterRequestDTO request) {
+        if (!isValidEmailFormat(request.getEmail())) {
+            throw new InvalidFormatException("invalid email format");
+        } else if (!isValidPasswordFormat(request.getPassword())) {
+            throw new InvalidFormatException("invalid password format");
+        } else {
+            User user = User.builder()
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(request.getRole() != null ? request.getRole() : Role.USER)
+                    .build();
+            return userRepository.save(user);
+        }
     }
 
     @Override
     public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
-        return AuthenticationResponseDTO.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
+
+        if (!isValidEmailFormat(request.getEmail())) {
+            throw new InvalidFormatException("invalid email format");
+        } else {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+            var jwtToken = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
+            revokeAllUserTokens(user);
+            saveUserToken(user, jwtToken);
+            return AuthenticationResponseDTO.builder()
+                    .accessToken(jwtToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        }
+    }
+
+    private boolean isValidEmailFormat(String email) {
+        return email.matches("^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
+    }
+
+    private boolean isValidPasswordFormat(String pass) {
+        return pass.matches("^[A-Za-z0-9!@#$%^&*]*$");
     }
 
     private void revokeAllUserTokens(User user) {

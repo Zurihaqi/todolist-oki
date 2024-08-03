@@ -10,8 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WebResponseError<T> {
-    private String message;
-    private HttpStatus status;
-    private List<T> errors;
+public class WebResponseError {
+    private String error;
+//    private HttpStatus status;
 }

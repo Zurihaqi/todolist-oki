@@ -11,7 +11,5 @@ import org.springframework.http.HttpStatus;
 @Builder
 @Data
 public class WebResponse<T> {
-    private String message;
-    private HttpStatus status;
     private T data;
 }

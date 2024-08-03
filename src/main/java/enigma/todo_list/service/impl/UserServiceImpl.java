@@ -27,7 +27,18 @@ public class UserServiceImpl implements UserService {
                 .username(req.getUsername())
                 .email(req.getEmail())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .role(req.getRole() != null ? req.getRole() : Role.USER)
+                .role(Role.USER)
+                .build();
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User createSuperAdmin(RegisterRequestDTO req) {
+        User user = User.builder()
+                .username(req.getUsername())
+                .email(req.getEmail())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .role(Role.SUPER_ADMIN)
                 .build();
         return userRepository.save(user);
     }
@@ -43,47 +54,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(Integer id) {
-        if (userRepository.existsById(id)){
-            userRepository.deleteById(id);
-            System.out.println("User dengan id: \""+id+"\" Berhasil dihapus");
-        }else {
-            throw new NotFoundException("Category dengan ID " + id + "tidak ditemukan");
-        }
-    }
-
-    @Override
     public User updateRoleById(Integer id, UpdateRoleDTO req) {
         User user = getById(id);
         updateUserRole(user, req);
         return userRepository.save(user);
     }
 
-    @Override
-    public User update(RegisterRequestDTO req) {
-        User currentUser = authenticationService.getUserAuthenticated();
-        User user = getById(currentUser.getId());
-
-        updateUserDetailsByUser(user, req);
-
-        return userRepository.save(user);
-    }
-
     private void updateUserRole(User user, UpdateRoleDTO req) {
         if (req.getRole() != null) {
             user.setRole(req.getRole());
-        }
-    }
-
-    private void updateUserDetailsByUser(User user, RegisterRequestDTO req) {
-        if (req.getUsername() != null && !req.getUsername().isEmpty()) {
-            user.setUsername(req.getUsername());
-        }
-        if (req.getEmail() != null && !req.getEmail().isEmpty()) {
-            user.setEmail(req.getEmail());
-        }
-        if (req.getPassword() != null && !req.getPassword().isEmpty()) {
-            user.setPassword(req.getPassword());
         }
     }
 }

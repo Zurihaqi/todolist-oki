@@ -8,8 +8,6 @@ import java.util.List;
 public class Response {
     public static <T> ResponseEntity<?> renderJSON(T data, String message, HttpStatus httpStatus) {
         WebResponse<T> response = WebResponse.<T>builder()
-                .message(message)
-                .status(httpStatus)
                 .data(data)
                 .build();
         return ResponseEntity.status(httpStatus).body(response);
@@ -23,13 +21,12 @@ public class Response {
         return renderJSON(data, "Success");
     }
 
-    public static <T> ResponseEntity<?> renderError(String message, HttpStatus httpStatus, List<T> errors) {
-        WebResponseError<T> response = WebResponseError.<T>builder()
-                .message(message)
-                .status(httpStatus)
-                .errors(errors)
-                .build();
-        return ResponseEntity.status(httpStatus).body(response);
-    }
+//    public static ResponseEntity<?> renderError(String errors, HttpStatus httpStatus) {
+//        WebResponseError response = WebResponseError.builder()
+////                .status(httpStatus)
+//                .error(errors)
+//                .build();
+//        return ResponseEntity.status(httpStatus).body(response);
+//    }
 }
 

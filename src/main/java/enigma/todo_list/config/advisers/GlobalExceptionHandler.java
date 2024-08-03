@@ -1,7 +1,8 @@
 package enigma.todo_list.config.advisers;
 
-import enigma.todo_list.config.advisers.exception.NotFoundException;
+import enigma.todo_list.config.advisers.exception.*;
 import enigma.todo_list.utils.responseWrapper.WebResponse;
+import enigma.todo_list.utils.responseWrapper.WebResponseError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AccountStatusException;
@@ -10,9 +11,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.naming.AuthenticationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,52 +23,47 @@ public class GlobalExceptionHandler {
     /*
      * Authentication Handler Exception
      */
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
-        return new ResponseEntity<>("Error: Invalid username or password", HttpStatus.UNAUTHORIZED);
+    @ExceptionHandler(MissingFieldException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<?> handleMissingFieldException(MissingFieldException ex) {
+        WebResponseError error = WebResponseError.builder()
+                .error(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(ValidateException.class)
-//    public ResponseEntity<?> handleValidationException(ValidateException e) {
-//        return new ResponseEntity<>(new WebResponse<>("Request Tidak Sesuai", HttpStatus.BAD_REQUEST, e.getMessage()), HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @ExceptionHandler(AuthenticationException.class)
-//    public ResponseEntity<?> handleAuthenticationException(AuthenticationException e) {
-//        return new ResponseEntity<>(new WebResponse<>("Invalid login Credetiantials", HttpStatus.UNAUTHORIZED, e.getMessage()), HttpStatus.UNAUTHORIZED);
-//    }
-//
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<?> handleException(Exception e) {
-//        return new ResponseEntity<>(new WebResponse<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<?> handleAuthenticationException(AuthenticationException ex) {
+        WebResponseError error = WebResponseError.builder()
+                .error(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidFormatException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<?> handleInvalidFormatException(InvalidFormatException ex) {
+        WebResponseError error = WebResponseError.builder()
+                .error(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException ex) {
+        WebResponseError error = WebResponseError.builder()
+                .error("invalid credentials")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFoundException(NotFoundException e) {
-        return new ResponseEntity<>(new WebResponse<>("Not Found", HttpStatus.NOT_FOUND, e.getMessage()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new WebResponse<>(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
-    // Bad Input Handler
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handlePropertyValueException(Exception e){
-        String errorMessage = "BAD REQUEST : " + e.getMessage();
-        if (e.getMessage().contains("\"email\"")){
-            errorMessage = "Email Field Cannot be Empty";
-        }
-        if (e.getMessage().contains("rawPassword")) {
-            errorMessage = "Password Field Cannot be Empty";
-        }
-        if (e.getMessage().contains("\"first_name\"")) {
-            errorMessage = "FirstName Field Cannot be Empty";
-        }
-        if (e.getMessage().contains("\"last_name\"")) {
-            errorMessage = "LastName Field Cannot be Empty";
-        }
-        if (e.getMessage().contains("\"users_email_key\"")){
-            errorMessage = "Email Has Been Registered On Our System, Please Login Instead";
-        }
-        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-    }
 
     // Account Locked Exception
     @ExceptionHandler(AccountStatusException.class)

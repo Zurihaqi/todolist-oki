@@ -3,6 +3,10 @@ package enigma.todo_list.model.meta;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import enigma.todo_list.model.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,9 +31,12 @@ public class User implements UserDetails {
     private String username;
 
     @Column(nullable = false, length = 100, unique = true)
+    @Email
     private String email;
 
     @JsonIgnore
+    @NotNull
+    @Size(min = 12)
     private String password;
 
     @Enumerated(EnumType.STRING)

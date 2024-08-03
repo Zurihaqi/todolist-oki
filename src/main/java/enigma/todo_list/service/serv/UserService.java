@@ -8,9 +8,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     User create(RegisterRequestDTO req);
+    User createSuperAdmin(RegisterRequestDTO req);
     Page<User> getAll(Pageable pageable);
     User getById(Integer id);
-    void delete(Integer id);
     User updateRoleById(Integer id, UpdateRoleDTO req);
-    User update(RegisterRequestDTO req);
 }

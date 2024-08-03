@@ -6,7 +6,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
@@ -22,6 +22,9 @@ application:
       expiration: 900000
       refresh-token:
         expiration: 86400000
+
+X-Super-Admin-Secret-Key: superman admin turing machine gigachad sigma
+X-Admin-Secret-Key: admin turing machine alpha beta
 
 server:
   port: 8088

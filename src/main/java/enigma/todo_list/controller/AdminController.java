@@ -37,23 +37,16 @@ public class AdminController {
     @PatchMapping("/users/{id}/role")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('SUPER_ADMIN')")
     public ResponseEntity<?> updateRoleUser(@PathVariable Integer id, @RequestBody UpdateRoleDTO req){
-        return Response.renderJSON(
+        return new ResponseEntity<>(
                 userService.updateRoleById(id, req),
-                "Role User with \"Id-"+id+"\" has been changing to \""+req.getRole()+"\"",
                 HttpStatus.OK
         );
     }
 
     @PostMapping("/super-admin")
     public ResponseEntity<?> createSuperAdmin(@RequestBody RegisterRequestDTO req){
-        RegisterRequestDTO superAdmin = RegisterRequestDTO.builder()
-                .username(req.getUsername())
-                .email(req.getEmail())
-                .password(req.getPassword())
-                .role(Role.SUPER_ADMIN).build();
-        return Response.renderJSON(
-                userService.create(superAdmin),
-                "User with Role Super Admin has been created!",
+        return new ResponseEntity<>(
+                userService.createSuperAdmin(req),
                 HttpStatus.CREATED
         );
     }

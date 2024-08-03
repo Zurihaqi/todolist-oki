@@ -1,9 +1,11 @@
 package enigma.todo_list.controller;
 
+import enigma.todo_list.model.meta.TodoItem;
 import enigma.todo_list.service.serv.TodoService;
 import enigma.todo_list.utils.dto.TodoDTO;
 import enigma.todo_list.utils.dto.UpdateStatusDTO;
 import enigma.todo_list.utils.responseWrapper.Response;
+import enigma.todo_list.utils.responseWrapper.TodoRespone;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +23,23 @@ public class TodoController {
 
     @PostMapping("/todos")
     public ResponseEntity<?> createTodoItem(@Valid @RequestBody TodoDTO obj) {
-        return Response.renderJSON(service.create(obj), "Todo Item had Created", HttpStatus.CREATED);
+        TodoItem item = service.create(obj);
+        TodoRespone respone = TodoRespone.builder()
+                .id(String.valueOf(item.getId()))
+                .title(item.getTitle())
+                .description(item.getDescription())
+                .createdAt(String.valueOf(item.getCreatedDate()))
+                .dueDate(item.getDueDate())
+                .status(String.valueOf(item.getStatus()))
+                .build();
+        return new ResponseEntity<>(respone, HttpStatus.CREATED);
+//        return Response.renderJSON(service.create(obj), "Todo Item had Created", HttpStatus.CREATED);
     }
 
     @GetMapping("/todos")
     public ResponseEntity<?> findUserTodoItem() {
-        return Response.renderJSON(service.findAllByUser(), "Success", HttpStatus.OK);
+        return new ResponseEntity<>(service.findAllByUser(), HttpStatus.OK);
+//        return Response.renderJSON(service.findAllByUser(), "Success", HttpStatus.OK);
     }
 
     @GetMapping("/todos/{id}")
